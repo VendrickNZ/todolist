@@ -1,0 +1,35 @@
+{
+    "name": "todoapp",
+    "version": "1.0.0",
+    "description": "todolist firefox extension for myself",
+    "main": "index.js",
+    "scripts": {
+      "build:css": "postcss src/styles/tailwind.css -o dist/styles.css",
+      "build:ts": "tsc",
+      "build": "npm run build:css && npm run build:ts && cp src/index.html dist/index.html",
+      "watch:css": "postcss src/styles/tailwind.css -o dist/styles.css --watch",
+      "watch:ts": "tsc --watch",
+      "serve": "live-server dist",
+      "dev": "npm-run-all --parallel watch:css watch:ts serve"
+    },
+    "devDependencies": {
+      "autoprefixer": "^10.4.19",
+      "live-server": "^1.2.2",
+      "npm-run-all": "^4.1.5",
+      "postcss": "^8.4.38",
+      "postcss-cli": "^11.0.0",
+      "tailwindcss": "^3.4.4",
+      "typescript": "^4.5.4"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/VendrickNZ/todolist.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/VendrickNZ/todolist/issues"
+    },
+    "homepage": "https://github.com/VendrickNZ/todolist#readme"
+  }  
