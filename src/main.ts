@@ -6,13 +6,28 @@ const futureTasksContainer = document.querySelector('#future-task-list .tasks-co
 
 let taskIdCounter = 0;
 
+function loadTasks() {
+    const todayTasks = JSON.parse(localStorage.getItem('todayTasks') || '[]');
+    const futureTasks = JSON.parse(localStorage.getItem('futureTasks') || '[]');
+    todayTasks.forEach((taskName: string) => addTask(taskName, todayTasksContainer));
+    futureTasks.forEach((taskName: string) => addTask(taskName, futureTasksContainer));
+}
+
+function saveTasks() {
+    const todayTasks = [...todayTasksContainer.querySelectorAll('.task')].map(task => task.textContent);
+    const futureTasks = [...futureTasksContainer.querySelectorAll('.task')].map(task => task.textContent);
+    localStorage.setItem('todayTasks', JSON.stringify(todayTasks));
+    localStorage.setItem('futureTasks', JSON.stringify(futureTasks));
+}
+
 function addTask(taskName: string, container: HTMLDivElement) {
     const task = document.createElement('div');
-    task.className = 'task p-2 mb-2 bg-white border rounded shadow w-1/3';
+    task.className = 'task p-2 mb-2 bg-white border rounded shadow w-2/5 cursor-grab';
     task.textContent = taskName;
     task.setAttribute('draggable', 'true');
     task.id = `task-${taskIdCounter++}`; 
     container.appendChild(task);
+    saveTasks();
 }
 
 function handleAddTask() {
@@ -52,26 +67,55 @@ showDate();
 
 setInterval(showDate, 1000);
 
+document.addEventListener('mousedown', (event) => {
+    if (event.target instanceof HTMLElement && event.target.classList.contains('task')) {
+        event.target.classList.add('cursor-grabbing');
+        event.target.classList.remove('cursor-grab');
+    }
+});
+
+document.addEventListener('mouseup', (event) => {
+    if (event.target instanceof HTMLElement && event.target.classList.contains('task')) {
+        event.target.classList.remove('cursor-grabbing');
+        event.target.classList.add('cursor-grab');
+    }
+});
+
 document.addEventListener('dragstart', (event) => {
     if (event.target instanceof HTMLElement && event.target.classList.contains('task')) {
         event.dataTransfer?.setData('text/plain', event.target.id);
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.dropEffect = "move";
+        }
         event.target.classList.add('dragging');
+        event.target.classList.add('cursor-grabbing');
+        event.target.classList.remove('cursor-grab');
     }
 });
 
 document.addEventListener('dragend', (event) => {
     if (event.target instanceof HTMLElement && event.target.classList.contains('task')) {
-        event.target.classList.remove('dragging');
+        event.target.classList.remove('dragging', 'cursor-grabbing');
+        event.target.classList.add('cursor-grab');
     }
+    saveTasks();
 });
 
 document.addEventListener('dragover', (event) => {
     event.preventDefault();
-    const container = event.target instanceof HTMLElement ? event.target.closest('#today-task-list, #future-task-list') as HTMLDivElement : null;
+    let container = event.target instanceof HTMLElement ? event.target.closest('#today-task-list, #future-task-list') as HTMLDivElement : null;
     if (container) {
         container.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
         const afterElement = getDragAfterElement(container, event.clientY);
         const draggingElement = document.querySelector('.dragging') as HTMLElement;
+        
+        if (container.id === 'today-task-list') {
+            container = todayTasksContainer;
+        } else if (container.id === 'future-task-list') {
+            container = futureTasksContainer;
+        }
+
         if (afterElement == null) {
             container.appendChild(draggingElement);
         } else {
@@ -92,16 +136,22 @@ document.addEventListener('dragleave', (event) => {
 document.addEventListener('drop', (event) => {
     event.preventDefault();
     if (event.target instanceof HTMLElement) {
-        const container = event.target.closest('#today-task-list, #future-task-list') as HTMLDivElement;
+        let container = event.target.closest('#today-task-list, #future-task-list') as HTMLDivElement;
         if (container) {
             container.style.backgroundColor = '';
-            const taskId = event.dataTransfer?.getData('text');
-            if (taskId) {
-                const task = document.getElementById(taskId);
-                if (task) {
-                    container.appendChild(task);
-                }
+            const taskId = event.dataTransfer?.getData('text') ?? '';
+            const task = document.getElementById(taskId);
+
+            if (container.id === 'today-task-list') {
+                container = todayTasksContainer;
+            } else if (container.id === 'future-task-list') {
+                container = futureTasksContainer;
             }
+
+            if (task) {
+                container.appendChild(task);
+            }
+            saveTasks();
         }
     }
 });
@@ -109,13 +159,16 @@ document.addEventListener('drop', (event) => {
 function getDragAfterElement(container: HTMLElement, y: number) {
     const draggableElements = [...container.querySelectorAll('.task:not(.dragging)')];
 
-    return draggableElements.reduce<{ offset: number, element: HTMLElement | null }>((closest, child) => {
+    let closest = { offset: Number.NEGATIVE_INFINITY, element: null as HTMLElement | null };
+    draggableElements.forEach(child => {
         const box = child.getBoundingClientRect();
         const offset = y - box.top - box.height / 2;
+
         if (offset < 0 && offset > closest.offset) {
-            return { offset: offset, element: child as HTMLElement };
-        } else {
-            return closest;
+            closest = { offset: offset, element: child as HTMLElement };
         }
-    }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+    });
+    return closest.element;
 }
+
+loadTasks();
