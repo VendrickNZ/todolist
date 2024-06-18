@@ -3,31 +3,60 @@ const taskInput = document.getElementById('new-task') as HTMLInputElement;
 const dateElement = document.getElementById('date-string') as HTMLHeadingElement;
 const todayTasksContainer = document.querySelector('#today-task-list .tasks-container') as HTMLDivElement;
 const futureTasksContainer = document.querySelector('#future-task-list .tasks-container') as HTMLDivElement;
+const confirmationModal = document.getElementById('confirmationModal') as HTMLDivElement;
+const confirmButton = document.getElementById('confirmButton') as HTMLButtonElement;
+const cancelButton = document.getElementById('cancelButton') as HTMLButtonElement;
 
 let taskIdCounter = 0;
+let taskToRemove: HTMLDivElement | null = null;
 
 function loadTasks() {
     const todayTasks = JSON.parse(localStorage.getItem('todayTasks') || '[]');
     const futureTasks = JSON.parse(localStorage.getItem('futureTasks') || '[]');
-    todayTasks.forEach((taskName: string) => addTask(taskName, todayTasksContainer));
-    futureTasks.forEach((taskName: string) => addTask(taskName, futureTasksContainer));
+    todayTasks.forEach((taskName: string) => addTask(taskName, todayTasksContainer, true));
+    futureTasks.forEach((taskName: string) => addTask(taskName, futureTasksContainer, true));
 }
 
 function saveTasks() {
-    const todayTasks = [...todayTasksContainer.querySelectorAll('.task')].map(task => task.textContent);
-    const futureTasks = [...futureTasksContainer.querySelectorAll('.task')].map(task => task.textContent);
+    const todayTasks = [...todayTasksContainer.querySelectorAll('.task span')].map(task => task.textContent);
+    const futureTasks = [...futureTasksContainer.querySelectorAll('.task span')].map(task => task.textContent);
     localStorage.setItem('todayTasks', JSON.stringify(todayTasks));
     localStorage.setItem('futureTasks', JSON.stringify(futureTasks));
 }
 
-function addTask(taskName: string, container: HTMLDivElement) {
+function addTask(taskName: string, container: HTMLDivElement, isLoading = false) {
     const task = document.createElement('div');
-    task.className = 'task p-2 mb-2 bg-white border rounded shadow w-2/5 cursor-grab';
-    task.textContent = taskName;
+    task.className = 'task p-2 mb-2 bg-white border rounded shadow w-2/5 flex justify-between items-center cursor-grab';
     task.setAttribute('draggable', 'true');
     task.id = `task-${taskIdCounter++}`; 
+
+    const taskText = document.createElement('span');
+    taskText.textContent = taskName;
+    task.appendChild(taskText);
+
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'X';
+    removeButton.className = 'remove-task-button text-red-500 hover:text-red-700';
+    removeButton.addEventListener('click', () => {
+        taskToRemove = task;
+        confirmationModal.classList.remove('hidden');
+    });
+    task.appendChild(removeButton);
+
     container.appendChild(task);
-    saveTasks();
+
+    if (!isLoading) {
+        saveTasks();
+    }
+}
+
+function removeTask() {
+    if (taskToRemove) {
+        taskToRemove.parentElement?.removeChild(taskToRemove);
+        taskToRemove = null;
+        saveTasks();
+        confirmationModal.classList.add('hidden');
+    }
 }
 
 function handleAddTask() {
@@ -61,6 +90,13 @@ taskInput.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
         handleAddTask();
     }
+});
+
+confirmButton.addEventListener('click', removeTask);
+
+cancelButton.addEventListener('click', () => {
+    taskToRemove = null;
+    confirmationModal.classList.add('hidden');
 });
 
 showDate();
@@ -149,9 +185,14 @@ document.addEventListener('drop', (event) => {
             }
 
             if (task) {
-                container.appendChild(task);
+                const afterElement = getDragAfterElement(container, event.clientY);
+                if (afterElement == null) {
+                    container.appendChild(task);
+                } else {
+                    container.insertBefore(task, afterElement);
+                }
+                saveTasks();
             }
-            saveTasks();
         }
     }
 });
@@ -159,12 +200,14 @@ document.addEventListener('drop', (event) => {
 function getDragAfterElement(container: HTMLElement, y: number) {
     const draggableElements = [...container.querySelectorAll('.task:not(.dragging)')];
 
-    let closest = { offset: Number.NEGATIVE_INFINITY, element: null as HTMLElement | null };
+    let closest = { offset: Number.POSITIVE_INFINITY, element: null as HTMLElement | null };
     draggableElements.forEach(child => {
         const box = child.getBoundingClientRect();
         const offset = y - box.top - box.height / 2;
 
         if (offset < 0 && offset > closest.offset) {
+            closest = { offset: offset, element: child as HTMLElement };
+        } else if (offset >= 0 && offset < closest.offset) {
             closest = { offset: offset, element: child as HTMLElement };
         }
     });
