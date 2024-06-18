@@ -63,6 +63,9 @@ function addTask(taskName, container, isLoading) {
         confirmationModal.classList.remove('hidden');
     });
     task.appendChild(removeButton);
+    task.addEventListener('click', function () {
+        task.classList.toggle('bg-red-100');
+    });
     container.appendChild(task);
     if (!isLoading) {
         saveTasks();
@@ -203,14 +206,11 @@ document.addEventListener('drop', function (event) {
 });
 function getDragAfterElement(container, y) {
     var draggableElements = __spreadArray([], __read(container.querySelectorAll('.task:not(.dragging)')), false);
-    var closest = { offset: Number.POSITIVE_INFINITY, element: null };
+    var closest = { offset: Number.NEGATIVE_INFINITY, element: null };
     draggableElements.forEach(function (child) {
         var box = child.getBoundingClientRect();
         var offset = y - box.top - box.height / 2;
         if (offset < 0 && offset > closest.offset) {
-            closest = { offset: offset, element: child };
-        }
-        else if (offset >= 0 && offset < closest.offset) {
             closest = { offset: offset, element: child };
         }
     });

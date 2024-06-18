@@ -43,6 +43,11 @@ function addTask(taskName: string, container: HTMLDivElement, isLoading = false)
     });
     task.appendChild(removeButton);
 
+    task.addEventListener('click', () => {
+        task.classList.toggle('bg-red-100');
+    });
+
+
     container.appendChild(task);
 
     if (!isLoading) {
@@ -200,14 +205,12 @@ document.addEventListener('drop', (event) => {
 function getDragAfterElement(container: HTMLElement, y: number) {
     const draggableElements = [...container.querySelectorAll('.task:not(.dragging)')];
 
-    let closest = { offset: Number.POSITIVE_INFINITY, element: null as HTMLElement | null };
+    let closest = { offset: Number.NEGATIVE_INFINITY, element: null as HTMLElement | null };
     draggableElements.forEach(child => {
         const box = child.getBoundingClientRect();
         const offset = y - box.top - box.height / 2;
 
         if (offset < 0 && offset > closest.offset) {
-            closest = { offset: offset, element: child as HTMLElement };
-        } else if (offset >= 0 && offset < closest.offset) {
             closest = { offset: offset, element: child as HTMLElement };
         }
     });
