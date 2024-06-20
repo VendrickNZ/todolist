@@ -4,41 +4,42 @@
     "description": "todolist firefox extension for myself",
     "main": "index.js",
     "scripts": {
-      "build:css": "postcss src/styles/tailwind.css -o dist/styles.css",
-      "build:ts": "tsc",
-      "build:html": "cpx src/index.html dist/",
-      "build": "npm run build:css && npm run build:ts && npm run build:html",
-      "watch:css": "postcss src/styles/tailwind.css -o dist/styles.css --watch",
-      "watch:ts": "tsc --watch",
-      "watch:html": "chokidar src/index.html -c 'npm run build:html'",
-      "serve": "live-server dist",
-      "dev": "npm-run-all --parallel watch:css watch:ts watch:html serve"
+        "build": "webpack --mode production",
+        "dev": "webpack serve --mode development --open",
+        "watch": "webpack --watch"
     },
     "dependencies": {
-      "tailwindcss": "^3.3.1",
-      "typescript": "^5.0.4",
-      "autoprefixer": "^10.4.14",
-      "postcss": "^8.4.21"
+        "autoprefixer": "^10.4.14",
+        "postcss": "^8.4.21",
+        "tailwindcss": "^3.3.1",
+        "typescript": "^5.0.4"
     },
     "devDependencies": {
-      "chokidar-cli": "^3.0.0",
-      "npm-run-all": "^4.1.5",
-      "live-server": "^1.2.2",
-      "postcss-cli": "^11.0.0",
-      "eslint": "^8.38.0",
-      "@typescript-eslint/parser": "^5.0.0",
-      "@typescript-eslint/eslint-plugin": "^5.0.0",
-      "cpx": "^1.5.0"
+        "@typescript-eslint/eslint-plugin": "^5.0.0",
+        "@typescript-eslint/parser": "^5.0.0",
+        "autoprefixer": "^10.4.14",
+        "chokidar-cli": "^3.0.0",
+        "css-loader": "^6.5.1",
+        "eslint": "^8.38.0",
+        "html-webpack-plugin": "^5.6.0",
+        "live-server": "^1.2.2",
+        "npm-run-all": "^4.1.5",
+        "postcss-loader": "^6.2.1",
+        "style-loader": "^3.3.1",
+        "ts-loader": "^9.2.6",
+        "webpack": "^5.72.0",
+        "webpack-cli": "^4.9.2",
+        "webpack-dev-server": "^4.7.4"
     },
     "repository": {
-      "type": "git",
-      "url": "git+https://github.com/VendrickNZ/todolist.git"
+        "type": "git",
+        "url": "git+https://github.com/VendrickNZ/todolist.git"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "bugs": {
-      "url": "https://github.com/VendrickNZ/todolist/issues"
+        "url": "https://github.com/VendrickNZ/todolist/issues"
     },
     "homepage": "https://github.com/VendrickNZ/todolist#readme"
-  }  
+}

@@ -946,3 +946,42 @@ video {
     text-align: left;
   }
 }
+
+.hidden {
+    display: none;
+}
+
+.cursor-grabbing {
+    cursor: grabbing;
+}
+
+.cursor-grab {
+    cursor: grab;
+}
+
+.task {
+    transition: background-color 0.2s ease-in-out;
+    position: relative;
+}
+
+.settings-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  
+
+.settings-menu {
+    transition: opacity 0.1s ease-out, transform 0.1s ease-out;
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+.settings-menu:not(.hidden) {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.bg-red-100 {
+    background-color: #fee2e2;
+  }
