@@ -61,31 +61,12 @@ function addTask(task: Task, container: HTMLDivElement, isLoading = false) {
     taskElement.appendChild(taskDescription);
 
     const dropdownContainer = document.createElement('div');
-    dropdownContainer.className = 'relative inline-block text-left';
-
-    const settingsButton = document.createElement('button');
-    settingsButton.type = 'button';
-    settingsButton.className = 'inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50';
-    settingsButton.id = `menu-button-${taskIdCounter}`;
-    settingsButton.setAttribute('aria-expanded', 'true');
-    settingsButton.setAttribute('aria-haspopup', 'true');
-    settingsButton.addEventListener('click', (event) => {
-        event.stopPropagation();
-        toggleSettings(taskElement);
-    });
-
-    const buttonContent = document.createElement('span');
-    buttonContent.className = 'inline-flex items-center gap-2'
-
-    const buttonText = document.createTextNode('Options');
-    settingsButton.appendChild(buttonText);
-
+ 
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 20 20');
     svg.setAttribute('fill', 'currentColor');
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('width', '20');
-
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('fill-rule', 'evenodd');
@@ -94,41 +75,26 @@ function addTask(task: Task, container: HTMLDivElement, isLoading = false) {
 
     svg.appendChild(path);
 
-    settingsButton.appendChild(svg);
-
-    dropdownContainer.appendChild(settingsButton);
-
-    const settingsMenu = document.createElement('div');
-    settingsMenu.className = 'settings-menu absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden transition ease-out duration-100 transform opacity-0 scale-95';
-    settingsMenu.setAttribute('role', 'menu');
-    settingsMenu.setAttribute('aria-orientation', 'vertical');
-    settingsMenu.setAttribute('aria-labelledby', settingsButton.id);
-
-    const editButton = document.createElement('a');
+    const editButton = document.createElement('button');
+    editButton.className = 'edit-button';
     editButton.textContent = 'Edit';
-    editButton.className = 'block px-4 py-2 text-sm text-gray-700';
-    editButton.setAttribute('role', 'menuitem');
-    editButton.addEventListener('click', (event) => {
-        event.stopPropagation();
-        showEditModal(taskElement);
-        toggleSettings(taskElement);
-    });
-    settingsMenu.appendChild(editButton);
-
-    const deleteButton = document.createElement('a');
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-button';
     deleteButton.textContent = 'Delete';
-    deleteButton.className = 'block px-4 py-2 text-sm text-gray-700';
-    deleteButton.setAttribute('role', 'menuitem');
-    deleteButton.addEventListener('click', (event) => {
-        event.stopPropagation();
-        taskToRemove = taskElement;
-        confirmationModal.classList.remove('hidden');
-        toggleSettings(taskElement);
-    });
-    settingsMenu.appendChild(deleteButton);
 
-    dropdownContainer.appendChild(settingsMenu);
-    taskElement.appendChild(dropdownContainer);
+
+    const dropDownButton = document.createElement('button');
+    dropDownButton.className = 'drop-down-button';
+    dropDownButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggleSettings(taskElement);
+    })
+    dropDownButton.appendChild(svg);
+
+
+    taskElement.appendChild(dropDownButton);
+
 
     taskElement.addEventListener('click', () => {
         taskElement.classList.toggle('bg-red-100');
@@ -137,11 +103,22 @@ function addTask(task: Task, container: HTMLDivElement, isLoading = false) {
 
     container.appendChild(taskElement);
 
+    const settingsMenu = document.createElement('div');
+    settingsMenu.className = 'settings-menu hidden';
+    settingsMenu.setAttribute('role', 'menu');
+    settingsMenu.setAttribute('aria-orientation', 'vertical');
+    settingsMenu.setAttribute('aria-labelledby', dropDownButton.id);
+    settingsMenu.appendChild(editButton);
+    settingsMenu.appendChild(deleteButton);
+
+    dropdownContainer.appendChild(settingsMenu);
+    
+    
+
     if (!isLoading) {
         saveTasks();
     }
 }
-
 
 function removeTask() {
     if (taskToRemove) {
